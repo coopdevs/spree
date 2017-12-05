@@ -7,6 +7,12 @@ module Spree::Preferences
       default = options[:default]
       description = options[:description] || name
 
+      if name == :requires_authentication
+        puts
+        puts "default: #{default}"
+        puts "#{__FILE__}:#{__LINE__}"
+      end
+
       # cache_key will be nil for new objects, then if we check if there
       # is a pending preference before going to default
       define_method preference_getter_method(name) do
@@ -18,11 +24,27 @@ module Spree::Preferences
         else
           get_pending_preference(name) || default
         end
+
+        if name == :requires_authentication
+          puts
+          puts "preference_cache_key(name): #{preference_cache_key(name)}"
+          puts "default: #{default}"
+          puts "preference_store.get(preference_cache_key(name), default): #{preference_store.get(preference_cache_key(name), default)}"
+          puts "#{__FILE__}:#{__LINE__}"
+        end
       end
       alias_method prefers_getter_method(name), preference_getter_method(name)
 
       define_method preference_setter_method(name) do |value|
         value = convert_preference_value(value, type)
+
+        if name == :requires_authentication
+          puts
+          puts "preference_cache_key(name): #{preference_cache_key(name)}"
+          puts "value: #{value}"
+          puts "#{__FILE__}:#{__LINE__}"
+        end
+
         if preference_cache_key(name)
           preference_store.set preference_cache_key(name), value, type
         else

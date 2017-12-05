@@ -17,6 +17,8 @@ module Spree::Preferences
     end
 
     def set(key, value, type)
+      puts caller.each { |c| puts c } if key = 'spree/api_configuration/requires_authentication'
+
       @cache.write(key, value)
       persist(key, value, type)
     end
