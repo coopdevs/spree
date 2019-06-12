@@ -103,6 +103,7 @@ module Spree
     end
 
     def refresh_rates
+      puts "===== refresh_rates begin"
       return shipping_rates if shipped?
 
       shipping_method_id = shipping_method.try(:id)
@@ -115,6 +116,7 @@ module Spree
         }
         self.selected_shipping_rate_id = selected_rate.id if selected_rate
       end
+      puts "===== refresh_rates end"
 
       shipping_rates
     end
@@ -158,9 +160,14 @@ module Spree
     end
 
     def manifest
+      Rails.logger.debug "==== manifest begin"
+
       units = Spree::Variant.unscoped { inventory_units.includes(:variant).group_by(&:variant) }
       units.map do |variant, units|
         states = {}
+
+        Rails.logger.debug "==== manifest each"
+
         units.group_by(&:state).each { |state, iu| states[state] = iu.count }
         OpenStruct.new(variant: variant, quantity: units.length, states: states)
       end
@@ -225,11 +232,17 @@ module Spree
     def to_package
       package = Stock::Package.new(stock_location, order)
 
+      Rails.logger.debug "==== to_package begin"
+
       units = Spree::Variant.unscoped { inventory_units.includes(:variant).all }
 
       units.each do |inventory_unit|
+        Rails.logger.debug "==== to_package each"
         package.add inventory_unit.variant, 1, inventory_unit.state_name
       end
+
+      Rails.logger.debug "==== to_package end"
+
       package
     end
 
