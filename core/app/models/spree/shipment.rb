@@ -158,7 +158,8 @@ module Spree
     end
 
     def manifest
-      inventory_units.includes(:variant).group_by(&:variant).map do |variant, units|
+      units = Spree::Variant.unscoped { inventory_units.includes(:variant).group_by(&:variant) }
+      units.map do |variant, units|
         states = {}
         units.group_by(&:state).each { |state, iu| states[state] = iu.count }
         OpenStruct.new(variant: variant, quantity: units.length, states: states)
@@ -223,7 +224,10 @@ module Spree
 
     def to_package
       package = Stock::Package.new(stock_location, order)
-      inventory_units.includes(:variant).each do |inventory_unit|
+
+      units = Spree::Variant.unscoped { inventory_units.includes(:variant).all }
+
+      units.each do |inventory_unit|
         package.add inventory_unit.variant, 1, inventory_unit.state_name
       end
       package
