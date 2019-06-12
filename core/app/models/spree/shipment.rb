@@ -162,8 +162,7 @@ module Spree
     def manifest
       Rails.logger.debug "==== manifest begin"
 
-      units = Spree::Variant.unscoped { inventory_units.includes(:variant).group_by(&:variant) }
-      units.map do |variant, units|
+      inventory_units.joins(:variant).includes(:variant).group_by(&:variant).map do |variant, units|
         states = {}
 
         Rails.logger.debug "==== manifest each"
@@ -234,9 +233,7 @@ module Spree
 
       Rails.logger.debug "==== to_package begin"
 
-      units = Spree::Variant.unscoped { inventory_units.includes(:variant).all }
-
-      units.each do |inventory_unit|
+      inventory_units.joins(:variant).includes(:variant).each do |inventory_unit|
         Rails.logger.debug "==== to_package each"
         package.add inventory_unit.variant, 1, inventory_unit.state_name
       end
